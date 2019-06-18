@@ -3,9 +3,16 @@ package com.silverjun.java.ls;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.FileTime;
+import java.nio.file.attribute.PosixFileAttributes;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -56,10 +63,26 @@ public class Myls {
 	{
 		if (islOption)
 		{
+			Path path = file.toPath();
+			// check file type
+			String type;
+			if (file.isDirectory())	type = "d";
+			else if (file.isFile())	type = "-";
+			else if (Files.isSymbolicLink(file.toPath()))	type = "l";
+			else type = " ";
 			// get permission
+			PosixFileAttributes posixAttr = Files.readAttributes(path, PosixFileAttributes.class);
+			String ownerName = posixAttr.owner().getName();
+			String groupName = posixAttr.group().getName();
+			String permission = PosixFilePermissions.toString(posixAttr.permissions());
 			
+			long fileSize = (long)Files.getAttribute(path, "basic:size", NOFOLLOW_LINKS);
+
+			FileTime fileTime = (FileTime)Files.getAttribute(path, "basic:lastModifiedTime", NOFOLLOW_LINKS);
 			
-			System.out.print(String.format("%10s", ""));
+			int linkCount = (int)Files.getAttribute(path, "unix:nlink", NOFOLLOW_LINKS);
+			
+			System.out.print(String.format("%s%s%4d %10s %6s %5d %s %s", type, permission, linkCount, ownerName, groupName, fileSize, fileTime.toString(), file.getName()));
 		}
 		else
 			System.out.print(file.getName());
@@ -68,6 +91,7 @@ public class Myls {
 		{
 			System.out.println("...");
 		}
+		System.out.println();
 	}
 	
 	private void printFileDirectory(File directory) throws IOException
@@ -92,11 +116,13 @@ public class Myls {
 		// 3. print
 		// if there are h option, . .. must be print.
 		
-		if (ishOption)
-			System.out.println("total");
+		if (islOption)
+		{
+			System.out.println("total " + fileList.size());
+		}
 		for (File f:fileList)
 		{
-			System.out.println(f.getName());
+			printOneFile(f);
 		}
 	}
 
