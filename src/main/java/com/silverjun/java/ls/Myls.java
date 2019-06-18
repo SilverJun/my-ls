@@ -3,6 +3,9 @@ package com.silverjun.java.ls;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -11,6 +14,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.io.filefilter.HiddenFileFilter;
 
 
 public class Myls {
@@ -47,10 +51,53 @@ public class Myls {
 			System.exit(-1);
 		}
 	}
+
+	private void printOneFile(File file) throws IOException
+	{
+		if (islOption)
+		{
+			// get permission
+			
+			
+			System.out.print(String.format("%10s", ""));
+		}
+		else
+			System.out.print(file.getName());
+		
+		if (isFOption)
+		{
+			System.out.println("...");
+		}
+	}
 	
 	private void printFileDirectory(File directory) throws IOException
 	{
-		File[] fileList = directory.listFiles();
+		ArrayList<File> fileList = new ArrayList<File>();
+		// 1. get file list
+		if (!ishOption)
+			fileList.addAll(Arrays.asList(directory.listFiles()));
+		else
+			fileList.addAll(Arrays.asList(directory.listFiles((FileFilter)HiddenFileFilter.VISIBLE)));
+		
+		// 2. sort if there is no f option.
+		if (!isfOption)
+		{
+			fileList.sort(new Comparator<File>() {
+				public int compare(File o1, File o2) {
+					return o1.getName().compareTo(o2.getName());
+				};
+			});
+		}
+		
+		// 3. print
+		// if there are h option, . .. must be print.
+		
+		if (ishOption)
+			System.out.println("total");
+		for (File f:fileList)
+		{
+			System.out.println(f.getName());
+		}
 	}
 
 	private Options createOptions() {
