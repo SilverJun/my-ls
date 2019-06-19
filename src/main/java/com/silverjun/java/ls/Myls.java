@@ -101,7 +101,9 @@ public class Myls {
 		
 		if (isFOption)
 		{
-			System.out.println("...");
+			if (file.isDirectory())	System.out.print("/");
+			else if (file.isFile())	System.out.print("*");
+			else if (Files.isSymbolicLink(file.toPath()))	System.out.print("@");
 		}
 		System.out.println();
 	}
