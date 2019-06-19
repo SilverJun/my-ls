@@ -96,7 +96,9 @@ public class Myls {
 				AclFileAttributeView view = Files.getFileAttributeView(path, AclFileAttributeView.class);
 				ownerName = view.getOwner().getName();
 				groupName = "";
-				permission = view.getAcl().get(0).permissions().toString();
+				permission = file.canRead()?"r":"-";
+				permission = file.canWrite()?"w":"-";
+				permission = file.canExecute()?"x":"-";
 			}
 			else
 			{
