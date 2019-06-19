@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
@@ -76,8 +77,8 @@ public class Myls {
 			// check file type
 			String type;
 			if (file.isDirectory())	type = "d";
-			else if (file.isFile())	type = "-";
 			else if (Files.isSymbolicLink(file.toPath()))	type = "l";
+			else if (file.isFile())	type = "-";
 			else type = " ";
 			// get permission
 			PosixFileAttributes posixAttr = Files.readAttributes(path, PosixFileAttributes.class);
@@ -106,9 +107,13 @@ public class Myls {
 		if (isFOption)
 		{
 			if (file.isDirectory())	System.out.print("/");
-			else if (file.isFile())	System.out.print("*");
 			else if (Files.isSymbolicLink(file.toPath()))	System.out.print("@");
+			else if (file.isFile())	System.out.print("*");
 		}
+		
+		if (Files.isSymbolicLink(file.toPath()))
+			System.out.print(" -> " + file.toPath().toRealPath().getFileName());
+		
 		System.out.println();
 	}
 	
