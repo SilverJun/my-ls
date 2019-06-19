@@ -7,6 +7,8 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.AclFileAttributeView;
+import java.nio.file.attribute.DosFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermissions;
@@ -85,12 +87,26 @@ public class Myls {
 			else if (Files.isSymbolicLink(file.toPath()))	type = "l";
 			else if (file.isFile())	type = "-";
 			else type = " ";
-			// get permission
-			PosixFileAttributes posixAttr = Files.readAttributes(path, PosixFileAttributes.class);
-			String ownerName = posixAttr.owner().getName();
-			String groupName = posixAttr.group().getName();
-			String permission = PosixFilePermissions.toString(posixAttr.permissions());
 			
+			String ownerName;
+			String groupName;
+			String permission;
+			if (System.getProperty("os.name").startsWith("Windows"))
+			{
+				AclFileAttributeView view = Files.getFileAttributeView(path, AclFileAttributeView.class);
+				ownerName = view.getOwner().getName();
+				groupName = "";
+				permission = view.getAcl().get(0).permissions().toString();
+			}
+			else
+			{
+				// get permission
+				PosixFileAttributes posixAttr = Files.readAttributes(path, PosixFileAttributes.class);
+				ownerName = posixAttr.owner().getName();
+				groupName = posixAttr.group().getName();
+				permission = PosixFilePermissions.toString(posixAttr.permissions());
+			}
+
 			// get file size
 			long fileSize = (long)Files.getAttribute(path, "basic:size", NOFOLLOW_LINKS);
 			String fileSizeStr = String.valueOf(fileSize);
