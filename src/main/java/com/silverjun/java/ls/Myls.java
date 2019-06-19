@@ -91,7 +91,7 @@ public class Myls {
 			String ownerName;
 			String groupName;
 			String permission;
-			if (System.getProperty("os.name").startsWith("Windows"))
+			if (System.getProperty("os.name").startsWith("Windows"))		// if windows,
 			{
 				AclFileAttributeView view = Files.getFileAttributeView(path, AclFileAttributeView.class);
 				ownerName = view.getOwner().getName();
