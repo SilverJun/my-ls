@@ -88,10 +88,13 @@ public class Myls {
 			else if (file.isFile())	type = "-";
 			else type = " ";
 			
+			int linkCount = 0;
+						
 			String ownerName;
 			String groupName;
 			String permission;
-			if (System.getProperty("os.name").startsWith("Windows"))		// if windows,
+			boolean isWindows = System.getProperty("os.name").startsWith("Windows");
+			if (isWindows)		// if windows,
 			{
 				AclFileAttributeView view = Files.getFileAttributeView(path, AclFileAttributeView.class);
 				ownerName = view.getOwner().getName();
@@ -107,6 +110,9 @@ public class Myls {
 				ownerName = posixAttr.owner().getName();
 				groupName = posixAttr.group().getName();
 				permission = PosixFilePermissions.toString(posixAttr.permissions());
+
+				// get unix link count.
+				linkCount = (int)Files.getAttribute(path, "unix:nlink", NOFOLLOW_LINKS);
 			}
 
 			// get file size
@@ -123,10 +129,10 @@ public class Myls {
 			SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd HH:mm yyyy", Locale.US);
 			String lastFixedTime = dateFormat.format(new Date(fileTime.toMillis()));
 			
-			// get unix link count.
-			int linkCount = (int)Files.getAttribute(path, "unix:nlink", NOFOLLOW_LINKS);
-			
-			System.out.print(String.format("%s%s%4d %10s %6s %7s %s %s", type, permission, linkCount, ownerName, groupName, fileSizeStr, lastFixedTime, file.getName()));
+			if (isWindows)
+				System.out.print(String.format("%s%s%4d %10s %6s %7s %s %s", type, permission, linkCount, ownerName, groupName, fileSizeStr, lastFixedTime, file.getName()));
+			else
+				System.out.print(String.format("%s%s %s %6s %7s %s %s", type, permission, ownerName, groupName, fileSizeStr, lastFixedTime, file.getName()));
 		}
 		else
 			System.out.print(file.getName());
