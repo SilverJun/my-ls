@@ -138,7 +138,7 @@ public class Myls {
 		{
 			System.out.println("total " + fileList.size());
 		}
-		if (ishOption)
+		if (isaOption)
 		{
 			// . and .. print
 			fileList.add(0, new File(".."));
