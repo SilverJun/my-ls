@@ -9,9 +9,14 @@ import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermissions;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Date;
+import java.util.Locale;
+
 import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 
 import org.apache.commons.cli.CommandLine;
@@ -77,12 +82,19 @@ public class Myls {
 			String permission = PosixFilePermissions.toString(posixAttr.permissions());
 			
 			long fileSize = (long)Files.getAttribute(path, "basic:size", NOFOLLOW_LINKS);
-
+			String fileSizeStr = String.valueOf(fileSize);
+			if (ishOption)
+			{
+				fileSizeStr = readableFileSize(fileSize);
+			}
+			
 			FileTime fileTime = (FileTime)Files.getAttribute(path, "basic:lastModifiedTime", NOFOLLOW_LINKS);
 			
 			int linkCount = (int)Files.getAttribute(path, "unix:nlink", NOFOLLOW_LINKS);
+			SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd HH:mm yyyy", Locale.US);
+			String lastFixedTime = dateFormat.format(new Date(fileTime.toMillis()));
 			
-			System.out.print(String.format("%s%s%4d %10s %6s %5d %s %s", type, permission, linkCount, ownerName, groupName, fileSize, fileTime.toString(), file.getName()));
+			System.out.print(String.format("%s%s%4d %10s %6s %5s %s %s", type, permission, linkCount, ownerName, groupName, fileSizeStr, lastFixedTime, file.getName()));
 		}
 		else
 			System.out.print(file.getName());
@@ -98,7 +110,7 @@ public class Myls {
 	{
 		ArrayList<File> fileList = new ArrayList<File>();
 		// 1. get file list
-		if (!ishOption)
+		if (isaOption)
 			fileList.addAll(Arrays.asList(directory.listFiles()));
 		else
 			fileList.addAll(Arrays.asList(directory.listFiles((FileFilter)HiddenFileFilter.VISIBLE)));
@@ -119,6 +131,10 @@ public class Myls {
 		if (islOption)
 		{
 			System.out.println("total " + fileList.size());
+		}
+		if (ishOption)
+		{
+			// . and .. print
 		}
 		for (File f:fileList)
 		{
@@ -158,5 +174,13 @@ public class Myls {
 		String header = "My ls: implementation of ls command.";
 		String footer = "";
 		formatter.printHelp("my-ls", header, options, footer, true);
+	}
+	
+	// https://stackoverflow.com/questions/3263892/format-file-size-as-mb-gb-etc
+	public static String readableFileSize(long size) {
+	    if(size <= 0) return "0";
+	    final String[] units = new String[] { "B", "K", "M", "G", "T" };
+	    int digitGroups = (int) (Math.log10(size)/Math.log10(1024));
+	    return new DecimalFormat("#,##0.#").format(size/Math.pow(1024, digitGroups)) + units[digitGroups];
 	}
 }
