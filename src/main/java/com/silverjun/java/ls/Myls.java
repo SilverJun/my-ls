@@ -5,7 +5,7 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.FileAttribute;
+import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermissions;
@@ -52,6 +52,10 @@ public class Myls {
 			ishOption = cmd.hasOption("h");
 			
 			File pwd = new File(System.getProperty("user.dir"));
+			
+			if (cmd.getArgList().size() > 0)
+				pwd = new File(cmd.getArgList().get(0));
+			
 			printFileDirectory(pwd);
 		}
 		catch (ParseException e) {
@@ -94,7 +98,7 @@ public class Myls {
 			SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd HH:mm yyyy", Locale.US);
 			String lastFixedTime = dateFormat.format(new Date(fileTime.toMillis()));
 			
-			System.out.print(String.format("%s%s%4d %10s %6s %5s %s %s", type, permission, linkCount, ownerName, groupName, fileSizeStr, lastFixedTime, file.getName()));
+			System.out.print(String.format("%s%s%4d %10s %6s %7s %s %s", type, permission, linkCount, ownerName, groupName, fileSizeStr, lastFixedTime, file.getName()));
 		}
 		else
 			System.out.print(file.getName());
@@ -137,6 +141,8 @@ public class Myls {
 		if (ishOption)
 		{
 			// . and .. print
+			fileList.add(0, new File(".."));
+			fileList.add(0, new File("."));
 		}
 		for (File f:fileList)
 		{
