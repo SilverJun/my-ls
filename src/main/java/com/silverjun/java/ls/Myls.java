@@ -100,8 +100,8 @@ public class Myls {
 				ownerName = view.getOwner().getName();
 				groupName = "";
 				permission = file.canRead()?"r":"-";
-				permission = file.canWrite()?"w":"-";
-				permission = file.canExecute()?"x":"-";
+				permission += file.canWrite()?"w":"-";
+				permission += file.canExecute()?"x":"-";
 			}
 			else
 			{
